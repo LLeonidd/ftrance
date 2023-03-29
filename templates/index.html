@@ -308,24 +308,64 @@
 
   <!--WS Test script!-->
   <script>
-    const log = (text, color) => {
-      // document.getElementById('log').innerHTML += `<span style="color: ${color}">${text}</span><br>`;
-      document.getElementById('log').insertAdjacentHTML('afterbegin', `<span style="color: ${color}">${text}</span><br>`)
-    };
+<!--    const log = (text, color) => {-->
+<!--      // document.getElementById('log').innerHTML += `<span style="color: ${color}">${text}</span><br>`;-->
+<!--      document.getElementById('log').insertAdjacentHTML('afterbegin', `<span style="color: ${color}">${text}</span><br>`)-->
+<!--    };-->
 
-    const socket = new WebSocket('ws://' + location.host + '/receive/vending1');
+<!--    const socket = new WebSocket('ws://' + location.host + '/receive/vending1');-->
 
-    socket.addEventListener('message', ev => {
-      log('<<< ' + ev.data, 'blue');
-    });
-    document.getElementById('form').onsubmit = ev => {
-      ev.preventDefault();
-      const textField = document.getElementById('text');
-      log('>>> ' + textField.value, 'red');
-      socket.send(textField.value);
-      textField.value = '';
-    };
+<!--    socket.addEventListener('message', ev => {-->
+<!--      log('<<< ' + ev.data, 'blue');-->
+<!--    });-->
+<!--    document.getElementById('form').onsubmit = ev => {-->
+<!--      ev.preventDefault();-->
+<!--      const textField = document.getElementById('text');-->
+<!--      log('>>> ' + textField.value, 'red');-->
+<!--      socket.send(textField.value);-->
+<!--      textField.value = '';-->
+<!--    };-->
   </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf-8">
+        const log = (text, color) => {
+          // document.getElementById('log').innerHTML += `<span style="color: ${color}">${text}</span><br>`;
+          document.getElementById('log').insertAdjacentHTML('afterbegin', `<span style="color: ${color}">${text}</span><br>`)
+        };
+
+        $(document).ready(function() {
+            // Connect to the Socket.IO server.
+            // The connection URL has the following format, relative to the current page:
+            //     http[s]://<domain>:<port>[/<namespace>]
+            var socket = io('http://127.0.0.1:5000');
+            const roomName = 'vending1';
+            socket.emit('join', {room: roomName});
+
+            socket.on('connect', function() {
+                socket.emit('send_socket', {data: 'Connect to socket'});
+            });
+
+            socket.on('socket_response', function(msg, cb) {
+                log('<<< ' + msg.data, 'blue');
+                if (cb)
+                    cb();
+            });
+
+            document.getElementById('form').onsubmit = ev => {
+              ev.preventDefault();
+              const textField = document.getElementById('text');
+              log('>>> ' + textField.value, 'red');
+              //socket.emit('send_broadcast_event', {data: textField.value});
+              socket.emit('send_room', {room: roomName, data: textField.value});
+              //socket.emit('leave', {room: roomName});
+              //socket.emit('close_room', {room: roomName});
+              textField.value = '';
+              return false;
+            };
+
+
+        });
+    </script>
 </body>
 
 </html>
